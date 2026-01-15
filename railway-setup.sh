@@ -1,0 +1,23 @@
+#!/bin/bash
+# Script de configuration Railway pour zoological-dedication
+# Utilisez Railway CLI: railway variables set PORT=8080
+
+echo "🔧 Configuration Railway pour Beelzebub Honeypot Bancaire"
+echo "=================================================="
+echo ""
+echo "Variables d'environnement requises:"
+echo "  - PORT=8080 (OBLIGATOIRE)"
+echo "  - OPEN_AI_SECRET_KEY=sk-... (Optionnel, pour le plugin LLM)"
+echo ""
+echo "Commandes Railway CLI:"
+echo "  railway variables set PORT=8080"
+echo "  railway variables set OPEN_AI_SECRET_KEY=sk-votre-cle"
+echo ""
+echo "Vérification:"
+echo "  railway variables"
+echo "  railway logs"
+echo "  railway status"
+echo ""
+echo "✅ Fichier de configuration: http-8080-banking.yaml"
+echo "✅ Code ajuste automatiquement le port selon la variable PORT"
+echo ""

@@ -1,0 +1,15 @@
+# Fichiers de configuration à exclure pour le déploiement Railway
+# Gardez uniquement le fichier de configuration que vous souhaitez utiliser
+
+# Exemples de configurations à exclure (décommentez celles que vous n'utilisez pas)
+# configurations/services/ssh-22.yaml
+# configurations/services/ssh-2222.yaml
+# configurations/services/tcp-3306.yaml
+# configurations/services/mcp-8000.yaml
+# configurations/services/http-80.yaml
+
+# Pour utiliser le honeypot bancaire, gardez uniquement:
+# configurations/services/http-8080-banking.yaml
+
+# Pour utiliser la configuration HTTP simple, gardez uniquement:
+# configurations/services/http-8080.yaml

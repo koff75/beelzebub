@@ -6,9 +6,11 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"net"
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -187,6 +189,10 @@ func (bp configurationsParser) ReadConfigurationsServices() ([]BeelzebubServiceC
 		if err := beelzebubServiceConfiguration.CompileCommandRegex(); err != nil {
 			return nil, fmt.Errorf("in file %s: invalid regex: %v", filePath, err)
 		}
+		// Adjust address if PORT environment variable is set (for Railway, etc.)
+		if err := beelzebubServiceConfiguration.AdjustAddressFromEnv(); err != nil {
+			return nil, fmt.Errorf("in file %s: error adjusting address: %v", filePath, err)
+		}
 		servicesConfiguration = append(servicesConfiguration, *beelzebubServiceConfiguration)
 	}
 
@@ -204,6 +210,37 @@ func (c *BeelzebubServiceConfiguration) CompileCommandRegex() error {
 			c.Commands[i].Regex = rex
 		}
 	}
+	return nil
+}
+
+// AdjustAddressFromEnv adjusts the address to use the PORT environment variable if set.
+// This is useful for platforms like Railway that inject a PORT environment variable.
+func (c *BeelzebubServiceConfiguration) AdjustAddressFromEnv() error {
+	portEnv := os.Getenv("PORT")
+	if portEnv == "" {
+		return nil // No PORT env var, use address as configured
+	}
+
+	port, err := strconv.Atoi(portEnv)
+	if err != nil {
+		return fmt.Errorf("invalid PORT environment variable: %s", portEnv)
+	}
+
+	// Parse the existing address to extract host part
+	host, _, err := net.SplitHostPort(c.Address)
+	if err != nil {
+		// If address doesn't have a port (shouldn't happen), use default host
+		host = ""
+	}
+
+	// Reconstruct address with new port
+	if host == "" || host == "0.0.0.0" {
+		c.Address = fmt.Sprintf(":%d", port)
+	} else {
+		c.Address = fmt.Sprintf("%s:%d", host, port)
+	}
+
+	log.Infof("Adjusted address from environment PORT: %s", c.Address)
 	return nil
 }
 
