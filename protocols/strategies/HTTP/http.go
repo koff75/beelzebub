@@ -12,6 +12,7 @@ import (
 	"github.com/mariocandela/beelzebub/v3/tracer"
 
 	"github.com/google/uuid"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -25,6 +26,11 @@ type httpResponse struct {
 
 func (httpStrategy HTTPStrategy) Init(servConf parser.BeelzebubServiceConfiguration, tr tracer.Tracer) error {
 	serverMux := http.NewServeMux()
+
+	// Expose Prometheus metrics endpoint
+	serverMux.HandleFunc("/metrics", func(responseWriter http.ResponseWriter, request *http.Request) {
+		promhttp.Handler().ServeHTTP(responseWriter, request)
+	})
 
 	serverMux.HandleFunc("/", func(responseWriter http.ResponseWriter, request *http.Request) {
 		var matched bool
