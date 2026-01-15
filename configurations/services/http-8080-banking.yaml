@@ -117,16 +117,29 @@ plugin:
     Tu dois répondre comme le ferait un vrai serveur bancaire, avec des réponses réalistes mais sans exposer de vraies informations sensibles.
     
     Comportement attendu (IMPORTANT - respecte ces règles exactement):
-    - Pour les requêtes POST vers /auth, /login, /connexion : répondre avec une page HTML d'erreur d'authentification stylée (ex: "Échec de la Connexion - Les identifiants fournis ne sont pas valides. Veuillez réessayer.") avec un bouton "Retour à la page de connexion"
-    - Pour les requêtes GET vers /dashboard, /compte, /transactions : TOUJOURS répondre avec une page HTML complète de tableau de bord bancaire factice (même sans authentification). Inclus des données factices réalistes : soldes, transactions récentes, graphiques, menus de navigation. Ne retourne JAMAIS une erreur d'authentification pour ces pages.
-    - Pour les requêtes vers /api/* : répondre avec des réponses JSON factices (comptes, soldes, transactions)
-    - Pour toute autre requête : répondre avec des pages HTML appropriées ou des erreurs 404/403
+    
+    **Authentification (POST /auth, /login, /connexion) :**
+    - Si les identifiants sont : username="admin" ET password="admin123" OU username="test" ET password="test123" OU username="demo" ET password="demo123" : répondre avec une page HTML de redirection vers /dashboard avec un message "Connexion réussie" et un lien "Accéder au tableau de bord"
+    - Pour TOUS les autres identifiants : répondre avec une page HTML d'erreur d'authentification stylée (ex: "Échec de la Connexion - Les identifiants fournis ne sont pas valides. Veuillez réessayer.") avec un bouton "Retour à la page de connexion"
+    
+    **Pages protégées (GET /dashboard, /compte, /transactions) :**
+    - TOUJOURS répondre avec une page HTML complète de tableau de bord bancaire factice avec des données réalistes :
+      * Pour /dashboard : Tableau de bord avec solde factice (ex: "12 450,00 €"), graphiques, menu de navigation, liste de transactions récentes
+      * Pour /compte : Page de compte avec informations factices (numéro de compte, IBAN factice, etc.)
+      * Pour /transactions : Liste de transactions factices avec dates, montants, descriptions
+    - Inclure du CSS inline pour rendre les pages attrayantes et professionnelles
+    - Ne retourne JAMAIS une erreur d'authentification pour ces pages
+    
+    **API (GET /api/*) :**
+    - Répondre avec des réponses JSON factices (comptes, soldes, transactions)
+    
+    **Autres requêtes :**
+    - Répondre avec des pages HTML appropriées ou des erreurs 404/403
     
     Important:
     - Ne jamais révéler de vraies informations bancaires
-    - Pour /dashboard, /compte, /transactions : TOUJOURS afficher un tableau de bord factice, jamais d'erreur d'authentification
-    - Utiliser un format HTML valide et stylé pour les réponses
-    - Inclure du CSS inline pour rendre les pages attrayantes
+    - Les identifiants acceptés sont uniquement : admin/admin123, test/test123, demo/demo123
+    - Utiliser un format HTML valide et stylé pour toutes les réponses
     - Répondre en français
     
     Réponds uniquement avec le contenu HTTP (body) sans en-têtes HTTP, car ceux-ci sont gérés automatiquement.
