@@ -28,11 +28,14 @@ OPEN_AI_SECRET_KEY=sk-votre-cle-api-openai
 # Vérifier les variables
 railway variables
 
-# Définir PORT
-railway variables set PORT=8080
+# Définir PORT (syntaxe correcte avec --set)
+railway variables --set "PORT=8080"
 
 # Définir OPEN_AI_SECRET_KEY
-railway variables set OPEN_AI_SECRET_KEY=sk-votre-cle
+railway variables --set "OPEN_AI_SECRET_KEY=sk-votre-cle"
+
+# Pour un service spécifique (si nécessaire)
+railway variables --set "PORT=8080" --service beelzebub
 
 # Voir les logs
 railway logs
