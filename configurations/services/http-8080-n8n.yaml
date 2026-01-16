@@ -5,107 +5,442 @@ description: "n8n workflow automation platform - CVE-2026-21858 honeypot"
 serverName: "n8n"
 serverVersion: "1.120.0"
 commands:
-  # Endpoint de fingerprinting - Retourne la version n8n (vulnérable)
+  # ==========================================================================
+  # ENDPOINT: GET /signin - Page de connexion n8n stylée
+  # ==========================================================================
+  - regex: "^/signin$"
+    name: "n8n Sign In Page"
+    handler: |
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>n8n - Sign In</title>
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+                 background: #f5f5f5; display: flex; justify-content: center; align-items: center; 
+                 height: 100vh; margin: 0; }
+          .container { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); width: 360px; }
+          .logo { text-align: center; margin-bottom: 30px; }
+          .logo svg { width: 48px; height: 48px; }
+          h1 { font-size: 24px; text-align: center; margin: 0 0 30px; color: #333; }
+          input { width: 100%; padding: 12px; margin-bottom: 16px; border: 1px solid #ddd; 
+                  border-radius: 4px; box-sizing: border-box; font-size: 14px; }
+          button { width: 100%; padding: 12px; background: #ff6d5a; color: white; border: none; 
+                   border-radius: 4px; cursor: pointer; font-size: 16px; font-weight: 600; }
+          button:hover { background: #ff5a45; }
+          .version { text-align: center; color: #999; font-size: 12px; margin-top: 20px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="logo">
+            <svg viewBox="0 0 100 100" fill="#ff6d5a"><circle cx="50" cy="50" r="45"/></svg>
+          </div>
+          <h1>Sign in to n8n</h1>
+          <form action="/rest/login" method="post">
+            <input type="email" name="email" placeholder="Email address" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <button type="submit">Sign In</button>
+          </form>
+          <div class="version">n8n v1.120.0</div>
+        </div>
+      </body>
+      </html>
+    headers:
+      - "Content-Type: text/html; charset=utf-8"
+      - "Server: n8n"
+      - "X-Powered-By: Express"
+      - "X-n8n-Version: 1.120.0"
+      - "Cache-Control: no-cache, no-store, must-revalidate"
+    statusCode: 200
+
+  # ==========================================================================
+  # ENDPOINT: GET /rest/settings - Fingerprinting (version vulnérable)
+  # ==========================================================================
   - regex: "^/rest/settings$"
     name: "n8n Settings API"
     handler: |
       {
-        "version": "1.120.0",
-        "n8n-version": "1.120.0",
-        "instanceId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-        "timezone": "UTC",
-        "executionData": {
-          "saveDataOnError": true,
-          "saveDataOnSuccess": true,
-          "saveDataManualExecutions": true
-        },
-        "userManagement": {
-          "enabled": false
-        },
-        "license": {
-          "planName": "community"
+        "data": {
+          "n8nVersion": "1.120.0",
+          "versionCli": "1.120.0",
+          "databaseType": "sqlite",
+          "authenticationMethod": "email",
+          "defaultLocale": "en",
+          "endpointWebhook": "webhook",
+          "endpointWebhookTest": "webhook-test",
+          "instanceId": "f8e7d6c5-b4a3-9281-7654-321fedcba098",
+          "isDocker": true,
+          "timezone": "Europe/Rome",
+          "urlBaseWebhook": "https://n8n.example.com/",
+          "urlBaseEditor": "https://n8n.example.com/",
+          "executionMode": "regular",
+          "pushBackend": "websocket",
+          "communityNodesEnabled": true,
+          "expressionEvaluator": "tmpl",
+          "deployment": {
+            "type": "default"
+          },
+          "enterprise": {
+            "sharing": false,
+            "ldap": false,
+            "saml": false,
+            "logStreaming": false,
+            "advancedExecutionFilters": false,
+            "variables": true,
+            "sourceControl": false,
+            "auditLogs": false,
+            "externalSecrets": false,
+            "workflowHistory": false
+          },
+          "security": {
+            "blockFileAccessToN8nFiles": true,
+            "restrictFileAccessTo": ""
+          }
         }
       }
     headers:
-      - "Content-Type: application/json"
-      - "X-Powered-By: n8n"
+      - "Content-Type: application/json; charset=utf-8"
+      - "Server: n8n"
+      - "X-Powered-By: Express"
+      - "X-n8n-Version: 1.120.0"
+      - "Cache-Control: no-cache"
     statusCode: 200
 
-  # Endpoint de login - Capture les tentatives d'authentification
+  # ==========================================================================
+  # ENDPOINT: POST /rest/login - Capture des tentatives d'authentification
+  # ==========================================================================
   - regex: "^/rest/login$"
     name: "n8n Login API"
     plugin: "LLMHoneypot"
     headers:
-      - "Content-Type: application/json"
-      - "X-Powered-By: n8n"
+      - "Content-Type: application/json; charset=utf-8"
+      - "Server: n8n"
+      - "X-Powered-By: Express"
+      - "X-n8n-Version: 1.120.0"
     statusCode: 200
 
-  # Endpoints de formulaire - Cible principale de CVE-2026-21858
-  - regex: "^/form/.*$"
-    name: "n8n Form Webhook"
-    plugin: "LLMHoneypot"
+  # ==========================================================================
+  # ENDPOINT: POST /rest/workflows - Création de workflow
+  # ==========================================================================
+  - regex: "^/rest/workflows$"
+    name: "n8n Create Workflow"
+    handler: |
+      {
+        "data": {
+          "id": "wf_a1b2c3d4e5f67890",
+          "name": "New Workflow",
+          "active": false,
+          "createdAt": "2025-12-25T12:00:00.000Z",
+          "updatedAt": "2025-12-25T12:00:00.000Z",
+          "versionId": "v1-a1b2c3d4",
+          "nodes": [],
+          "connections": {},
+          "settings": {
+            "saveExecutionProgress": true,
+            "saveManualExecutions": true,
+            "saveDataErrorExecution": "all",
+            "saveDataSuccessExecution": "all",
+            "executionTimeout": 3600,
+            "timezone": "Europe/Rome"
+          },
+          "staticData": null,
+          "tags": [],
+          "sharedWith": []
+        }
+      }
     headers:
-      - "Content-Type: application/json"
-      - "X-Powered-By: n8n"
+      - "Content-Type: application/json; charset=utf-8"
+      - "Server: n8n"
+      - "X-Powered-By: Express"
+      - "X-n8n-Version: 1.120.0"
+      - "X-Request-Id: req_f8e7d6c5b4a39281"
+    statusCode: 201
+
+  # ==========================================================================
+  # ENDPOINT: PUT /rest/workflows/:id - Mise à jour de workflow
+  # ==========================================================================
+  - regex: "^/rest/workflows/[a-zA-Z0-9_-]+$"
+    name: "n8n Update Workflow"
+    handler: |
+      {
+        "data": {
+          "id": "wf_a1b2c3d4e5f67890",
+          "name": "Updated Workflow",
+          "active": false,
+          "createdAt": "2025-12-20T10:30:00.000Z",
+          "updatedAt": "2025-12-25T14:35:22.000Z",
+          "versionId": "v2-b2c3d4e5",
+          "nodes": [
+            {
+              "id": "start-node",
+              "name": "Start",
+              "type": "n8n-nodes-base.manualTrigger",
+              "typeVersion": 1,
+              "position": [100, 100],
+              "parameters": {}
+            }
+          ],
+          "connections": {},
+          "settings": {
+            "saveExecutionProgress": true,
+            "saveManualExecutions": true
+          }
+        }
+      }
+    headers:
+      - "Content-Type: application/json; charset=utf-8"
+      - "Server: n8n"
+      - "X-Powered-By: Express"
+      - "X-n8n-Version: 1.120.0"
     statusCode: 200
 
-  # Endpoints webhook
+  # ==========================================================================
+  # ENDPOINT: POST /rest/workflows/:id/execute - Exécution de workflow
+  # ==========================================================================
+  - regex: "^/rest/workflows/[a-zA-Z0-9_-]+/execute$"
+    name: "n8n Execute Workflow"
+    handler: |
+      {
+        "data": {
+          "executionId": "exec_9876543210fedcba",
+          "mode": "manual",
+          "startedAt": "2025-12-25T14:40:00.000Z",
+          "status": "running",
+          "workflowId": "wf_a1b2c3d4e5f67890",
+          "workflowName": "Workflow",
+          "data": {
+            "resultData": {
+              "runData": {},
+              "lastNodeExecuted": "Start"
+            }
+          }
+        }
+      }
+    headers:
+      - "Content-Type: application/json; charset=utf-8"
+      - "Server: n8n"
+      - "X-Powered-By: Express"
+      - "X-n8n-Version: 1.120.0"
+      - "X-Execution-Id: exec_9876543210fedcba"
+    statusCode: 200
+
+  # ==========================================================================
+  # ENDPOINT: GET /api/v1/workflows - Liste des workflows
+  # ==========================================================================
+  - regex: "^/api/v1/workflows$"
+    name: "n8n Workflows API"
+    handler: |
+      {
+        "data": [
+          {
+            "id": "wf_a1b2c3d4e5f67890",
+            "name": "Production Workflow",
+            "active": true,
+            "createdAt": "2025-12-01T08:00:00.000Z",
+            "updatedAt": "2025-12-24T16:30:00.000Z",
+            "tags": [
+              {
+                "id": "tag_prod123",
+                "name": "production"
+              }
+            ]
+          },
+          {
+            "id": "wf_fedcba0987654321",
+            "name": "Data Processing",
+            "active": false,
+            "createdAt": "2025-11-15T10:00:00.000Z",
+            "updatedAt": "2025-12-20T12:00:00.000Z",
+            "tags": []
+          }
+        ],
+        "nextCursor": null
+      }
+    headers:
+      - "Content-Type: application/json; charset=utf-8"
+      - "Server: n8n"
+      - "X-Powered-By: Express"
+      - "X-n8n-Version: 1.120.0"
+    statusCode: 200
+
+  # ==========================================================================
+  # ENDPOINT: GET /api/v1/credentials - Liste des credentials
+  # ==========================================================================
+  - regex: "^/api/v1/credentials$"
+    name: "n8n Credentials API"
+    handler: |
+      {
+        "data": [
+          {
+            "id": "cred_aws123",
+            "name": "AWS Production",
+            "type": "aws",
+            "createdAt": "2025-06-01T10:00:00.000Z",
+            "updatedAt": "2025-12-01T14:30:00.000Z"
+          },
+          {
+            "id": "cred_db456",
+            "name": "Database Connection",
+            "type": "postgres",
+            "createdAt": "2025-03-15T08:00:00.000Z",
+            "updatedAt": "2025-11-20T16:00:00.000Z"
+          },
+          {
+            "id": "cred_api789",
+            "name": "Internal API Key",
+            "type": "httpBasicAuth",
+            "createdAt": "2025-09-10T12:00:00.000Z",
+            "updatedAt": "2025-12-20T10:00:00.000Z"
+          }
+        ],
+        "nextCursor": null
+      }
+    headers:
+      - "Content-Type: application/json; charset=utf-8"
+      - "Server: n8n"
+      - "X-Powered-By: Express"
+      - "X-n8n-Version: 1.120.0"
+    statusCode: 200
+
+  # ==========================================================================
+  # ENDPOINT: GET /api/v1/executions - Liste des exécutions
+  # ==========================================================================
+  - regex: "^/api/v1/executions.*$"
+    name: "n8n Executions API"
+    handler: |
+      {
+        "data": [
+          {
+            "id": "exec_12345",
+            "finished": true,
+            "mode": "trigger",
+            "retryOf": null,
+            "startedAt": "2025-12-25T08:00:00.000Z",
+            "stoppedAt": "2025-12-25T08:00:02.500Z",
+            "workflowId": "wf_a1b2c3d4e5f67890",
+            "status": "success"
+          },
+          {
+            "id": "exec_12344",
+            "finished": true,
+            "mode": "manual",
+            "retryOf": null,
+            "startedAt": "2025-12-24T14:30:00.000Z",
+            "stoppedAt": "2025-12-24T14:30:05.200Z",
+            "workflowId": "wf_fedcba0987654321",
+            "status": "error"
+          }
+        ],
+        "nextCursor": null
+      }
+    headers:
+      - "Content-Type: application/json; charset=utf-8"
+      - "Server: n8n"
+      - "X-Powered-By: Express"
+      - "X-n8n-Version: 1.120.0"
+    statusCode: 200
+
+  # ==========================================================================
+  # ENDPOINT: /webhook/* - Webhooks n8n (statique pour réalisme)
+  # ==========================================================================
   - regex: "^/webhook/.*$"
     name: "n8n Webhook"
-    plugin: "LLMHoneypot"
+    handler: |
+      {
+        "message": "Workflow was started",
+        "executionId": "exec_webhook_1234567890",
+        "success": true
+      }
     headers:
-      - "Content-Type: application/json"
-      - "X-Powered-By: n8n"
+      - "Content-Type: application/json; charset=utf-8"
+      - "Server: n8n"
+      - "X-Powered-By: Express"
+      - "X-n8n-Version: 1.120.0"
+      - "X-Webhook-Execution: exec_webhook_1234567890"
     statusCode: 200
 
-  # Endpoints webhook-test
+  # ==========================================================================
+  # ENDPOINT: /webhook-test/* - Webhooks de test (statique pour réalisme)
+  # ==========================================================================
   - regex: "^/webhook-test/.*$"
     name: "n8n Webhook Test"
-    plugin: "LLMHoneypot"
+    handler: |
+      {
+        "message": "Test webhook received",
+        "mode": "test",
+        "success": true
+      }
     headers:
-      - "Content-Type: application/json"
-      - "X-Powered-By: n8n"
+      - "Content-Type: application/json; charset=utf-8"
+      - "Server: n8n"
+      - "X-Powered-By: Express"
+      - "X-n8n-Version: 1.120.0"
     statusCode: 200
 
-  # API workflows
-  - regex: "^/api/v1/workflows.*$"
-    name: "n8n Workflows API"
+  # ==========================================================================
+  # ENDPOINT: POST /form/* - CIBLE PRINCIPALE CVE-2026-21858 (avec LLM)
+  # ==========================================================================
+  - regex: "^/form/.*$"
+    name: "n8n Form Webhook - CVE-2026-21858 Target"
     plugin: "LLMHoneypot"
     headers:
-      - "Content-Type: application/json"
-      - "X-Powered-By: n8n"
+      - "Content-Type: application/json; charset=utf-8"
+      - "Server: n8n"
+      - "X-Powered-By: Express"
+      - "X-n8n-Version: 1.120.0"
     statusCode: 200
 
-  # Page d'accueil n8n (optionnel)
+  # ==========================================================================
+  # ENDPOINT: GET / - Redirection vers /signin
+  # ==========================================================================
   - regex: "^/$"
-    name: "n8n Homepage"
+    name: "n8n Homepage Redirect"
     handler: |
       <!DOCTYPE html>
-      <html>
-      <head>
-        <title>n8n - Workflow Automation</title>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      </head>
-      <body>
-        <h1>n8n</h1>
-        <p>Workflow Automation Platform</p>
-        <p>Version 1.120.0</p>
-      </body>
-      </html>
+      <html><head><meta http-equiv="refresh" content="0;url=/signin"></head></html>
     headers:
-      - "Content-Type: text/html"
-      - "X-Powered-By: n8n"
+      - "Content-Type: text/html; charset=utf-8"
+      - "Server: n8n"
+      - "X-Powered-By: Express"
+      - "X-n8n-Version: 1.120.0"
+    statusCode: 302
+
+  # ==========================================================================
+  # ENDPOINT: GET /healthz? - Health check
+  # ==========================================================================
+  - regex: "^/healthz?$"
+    name: "n8n Health Check"
+    handler: |
+      {
+        "status": "ok"
+      }
+    headers:
+      - "Content-Type: application/json; charset=utf-8"
+      - "Server: n8n"
+      - "X-Powered-By: Express"
     statusCode: 200
 
-  # Toutes les autres requêtes - Réponses n8n génériques
+  # ==========================================================================
+  # FALLBACK: Toutes les autres requêtes - Erreur 401 Unauthorized
+  # ==========================================================================
   - regex: "^.*$"
-    name: "n8n Generic Response"
-    plugin: "LLMHoneypot"
+    name: "n8n Unauthorized"
+    handler: |
+      {
+        "code": 401,
+        "message": "Unauthorized",
+        "hint": "Missing or invalid API key. Set header 'X-N8N-API-KEY' or cookie 'n8n-auth'."
+      }
     headers:
-      - "Content-Type: application/json"
-      - "X-Powered-By: n8n"
-    statusCode: 200
+      - "Content-Type: application/json; charset=utf-8"
+      - "Server: n8n"
+      - "X-Powered-By: Express"
+      - "X-n8n-Version: 1.120.0"
+      - "WWW-Authenticate: Bearer realm=\"n8n\""
+    statusCode: 401
 
 plugin:
   llmProvider: "openai"
@@ -117,14 +452,12 @@ plugin:
     
     Comportement attendu (IMPORTANT - respecte ces règles exactement):
     
-    **GET /rest/settings :**
-    - Déjà géré par un handler statique, ne devrait pas arriver ici
-    
     **POST /rest/login :**
     - Répondre avec un JSON n8n d'erreur d'authentification : {"code": 401, "message": "Invalid credentials"}
     - Format standard n8n pour les erreurs d'auth
+    - Ne JAMAIS retourner de succès d'authentification (même avec des credentials valides)
     
-    **POST /form/*, /webhook/*, /webhook-test/* (Endpoints critiques pour CVE-2026-21858) :**
+    **POST /form/* (ENDPOINT CRITIQUE pour CVE-2026-21858) :**
     - Ces endpoints acceptent normalement Content-Type: multipart/form-data pour les uploads de fichiers
     - Si le body JSON contient un champ "files" avec "filepath" (tentative d'exploitation CVE-2026-21858), répondre avec un JSON n8n d'erreur réaliste :
       * {"success": false, "error": "Failed to process form submission", "code": "FORM_PROCESSING_ERROR", "message": "Invalid file format"}
@@ -132,17 +465,10 @@ plugin:
     - Ne JAMAIS retourner le contenu des fichiers demandés (même factice)
     - Pour les requêtes normales sans "filepath", répondre avec un JSON de succès : {"success": true, "data": {"id": "...", "status": "processed"}}
     - Format JSON conforme à l'API n8n
-    
-    **GET /api/v1/workflows :**
-    - Répondre avec un tableau JSON de workflows factices : [{"id": "1", "name": "Example Workflow", "active": true, "nodes": [], "connections": {}}]
-    - Format conforme à l'API n8n workflows
-    
-    **Autres endpoints :**
-    - Répondre avec des réponses JSON n8n appropriées
-    - Codes d'erreur HTTP standards (404, 500, etc.) avec format JSON n8n : {"error": {"message": "...", "code": 404}}
+    - IMPORTANT: Détecter les tentatives d'exploitation CVE-2026-21858 via Content-Type: application/json avec filepath dans le body
     
     Important:
-    - TOUTES les réponses doivent être en JSON valide (pas de HTML sauf pour /)
+    - TOUTES les réponses doivent être en JSON valide (pas de HTML)
     - Utiliser le format d'erreur n8n standard : {"code": ..., "message": "..."} ou {"error": {"message": "...", "code": ...}}
     - Ne jamais révéler que c'est un honeypot
     - Simuler le comportement d'une vraie instance n8n 1.120.0 vulnérable
