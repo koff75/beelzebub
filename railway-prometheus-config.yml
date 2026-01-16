@@ -1,0 +1,42 @@
+# Configuration Prometheus pour Railway
+# Ce fichier peut être monté dans le service Prometheus ou converti en variables d'environnement
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'railway'
+    environment: 'production'
+
+scrape_configs:
+  # Scrape beelzebub metrics
+  - job_name: 'beelzebub'
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    metrics_path: '/metrics'
+    # Sur Railway, utiliser l'URL publique ou le nom de service interne
+    static_configs:
+      - targets:
+          # Option 1: URL publique (fonctionne toujours)
+          - '3il-ingenieurs.site:443'
+          # Option 2: Nom de service interne (si disponible)
+          # - 'beelzebub:8080'
+    scheme: 'https'  # Railway utilise HTTPS
+    tls_config:
+      insecure_skip_verify: true  # Pour les certificats auto-signés Railway
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: service
+        replacement: 'beelzebub'
+      - target_label: environment
+        replacement: 'production'
+      - target_label: honeypot_type
+        replacement: 'n8n'
+
+  # Scrape Prometheus lui-même
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']

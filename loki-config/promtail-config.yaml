@@ -1,0 +1,90 @@
+# Configuration Promtail pour collecter les logs de Beelzebub depuis Railway
+# Promtail lit les logs et les envoie à Loki
+
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  # Configuration pour les logs Beelzebub
+  - job_name: beelzebub
+    # Sur Railway, les logs peuvent être collectés via:
+    # 1. API Railway (si disponible)
+    # 2. Fichiers de logs (si montés)
+    # 3. Stdout/stderr du conteneur
+    
+    # Option: Lire depuis stdout (si Railway expose les logs)
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: beelzebub
+          service: beelzebub
+          environment: production
+          honeypot_type: n8n
+          __path__: /var/log/beelzebub/*.log
+    
+    # Pipeline pour parser les logs JSON
+    pipeline_stages:
+      # Parser JSON
+      - json:
+          expressions:
+            level: level
+            msg: msg
+            event_id: event.ID
+            event_source_ip: event.SourceIp
+            event_http_method: event.HTTPMethod
+            event_request_uri: event.RequestURI
+            event_user_agent: event.UserAgent
+            event_handler: event.Handler
+            event_protocol: event.Protocol
+            event_body: event.Body
+            event_host: event.HostHTTPRequest
+      
+      # Extraire les labels
+      - labels:
+          level:
+          msg:
+          source_ip: event_source_ip
+          http_method: event_http_method
+          request_uri: event_request_uri
+          handler: event_handler
+          protocol: event_protocol
+      
+      # Détecter les tentatives d'exploitation CVE-2026-21858
+      - match:
+          selector: '{service="beelzebub"}'
+          stages:
+            - regex:
+                expression: '.*"filepath".*'
+                source: event_body
+            - labels:
+                exploit_attempt: "cve-2026-21858"
+      
+      # Détecter les requêtes POST vers /form/*
+      - match:
+          selector: '{http_method="POST"}'
+          stages:
+            - regex:
+                expression: '/form/.*'
+                source: request_uri
+            - labels:
+                endpoint_type: "form_webhook"
+      
+      # Output final
+      - output:
+          source: message
+
+  # Configuration alternative: Collecter depuis Railway API
+  # (nécessite un token Railway et une configuration spécifique)
+  # - job_name: railway-beelzebub
+  #   railway_api:
+  #     project_id: "f82b9ba9-6186-476e-b322-5a6bdc62a997"
+  #     service: "beelzebub"
+  #     token: "${RAILWAY_TOKEN}"

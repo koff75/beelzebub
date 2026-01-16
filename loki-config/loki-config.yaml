@@ -1,0 +1,65 @@
+auth_enabled: false
+
+server:
+  http_listen_port: 3100
+  grpc_listen_port: 9096
+
+common:
+  path_prefix: /loki
+  storage:
+    filesystem:
+      chunks_directory: /loki/chunks
+      rules_directory: /loki/rules
+  replication_factor: 1
+  ring:
+    instance_addr: 127.0.0.1
+    kvstore:
+      store: inmemory
+
+schema_config:
+  configs:
+    - from: 2020-10-24
+      store: boltdb-shipper
+      object_store: filesystem
+      schema: v11
+      index:
+        prefix: index_
+        period: 24h
+
+ruler:
+  alertmanager_url: http://localhost:9093
+
+# Configuration pour parser les logs JSON de Beelzebub
+limits_config:
+  reject_old_samples: true
+  reject_old_samples_max_age: 168h
+  max_query_length: 721h
+  max_query_parallelism: 32
+  ingestion_rate_mb: 16
+  ingestion_burst_size_mb: 32
+
+# Pipeline de parsing pour les logs Beelzebub
+# Les logs Railway sont au format JSON structuré
+# Format attendu:
+# {
+#   "level": "info",
+#   "msg": "HTTP New request",
+#   "event": {
+#     "ID": "...",
+#     "SourceIp": "193.19.82.13",
+#     "HTTPMethod": "HEAD",
+#     "RequestURI": "/",
+#     "UserAgent": "...",
+#     "Handler": "n8n Homepage SEO",
+#     "Body": "...",
+#     "Headers": {...}
+#   }
+# }
+
+# Note: Sur Railway, Loki peut collecter les logs via:
+# 1. Promtail (agent de collecte) qui lit les logs Railway
+# 2. API Railway pour récupérer les logs
+# 3. Configuration directe si Railway expose les logs en streaming
+
+# Configuration pour extraire les labels depuis les logs JSON
+# Cette configuration sera utilisée par Promtail ou l'agent de collecte

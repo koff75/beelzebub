@@ -1,0 +1,242 @@
+{
+  "dashboard": {
+    "title": "Beelzebub Honeypot - Overview",
+    "tags": ["beelzebub", "honeypot", "n8n", "security"],
+    "timezone": "browser",
+    "schemaVersion": 38,
+    "version": 1,
+    "refresh": "10s",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Total Events",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+        "targets": [
+          {
+            "expr": "beelzebub_events_total",
+            "refId": "A",
+            "datasource": {"type": "prometheus", "uid": "prometheus"}
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": null, "color": "green"},
+                {"value": 100, "color": "yellow"},
+                {"value": 1000, "color": "red"}
+              ]
+            },
+            "unit": "short"
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "Events by Protocol",
+        "type": "piechart",
+        "gridPos": {"h": 8, "w": 6, "x": 6, "y": 0},
+        "targets": [
+          {
+            "expr": "beelzebub_http_events_total",
+            "legendFormat": "HTTP",
+            "refId": "A"
+          },
+          {
+            "expr": "beelzebub_ssh_events_total",
+            "legendFormat": "SSH",
+            "refId": "B"
+          },
+          {
+            "expr": "beelzebub_tcp_events_total",
+            "legendFormat": "TCP",
+            "refId": "C"
+          },
+          {
+            "expr": "beelzebub_mcp_events_total",
+            "legendFormat": "MCP",
+            "refId": "D"
+          }
+        ],
+        "options": {
+          "legend": {"displayMode": "table", "placement": "right"},
+          "pieType": "pie"
+        }
+      },
+      {
+        "id": 3,
+        "title": "HTTP Events Rate (per minute)",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+        "targets": [
+          {
+            "expr": "rate(beelzebub_http_events_total[1m]) * 60",
+            "legendFormat": "HTTP Events/min",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "unit": "reqps"
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "Top 10 Source IPs",
+        "type": "table",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+        "targets": [
+          {
+            "expr": "topk(10, sum by (source_ip) (count_over_time({service=\"beelzebub\"} |= \"HTTP New request\" [1h])))",
+            "format": "table",
+            "refId": "A",
+            "datasource": {"type": "loki", "uid": "loki"}
+          }
+        ],
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {"Time": true},
+              "indexByName": {},
+              "renameByName": {
+                "source_ip": "Source IP",
+                "Value": "Requests"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Top 10 Endpoints",
+        "type": "barchart",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+        "targets": [
+          {
+            "expr": "sum by (request_uri) (count_over_time({service=\"beelzebub\"} |= \"HTTP New request\" [1h]))",
+            "format": "table",
+            "refId": "A",
+            "datasource": {"type": "loki", "uid": "loki"}
+          }
+        ],
+        "options": {
+          "orientation": "horizontal",
+          "legend": {"displayMode": "list", "placement": "bottom"}
+        }
+      },
+      {
+        "id": 6,
+        "title": "Top 10 User-Agents",
+        "type": "table",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+        "targets": [
+          {
+            "expr": "topk(10, sum by (user_agent) (count_over_time({service=\"beelzebub\"} |= \"HTTP New request\" [1h])))",
+            "format": "table",
+            "refId": "A",
+            "datasource": {"type": "loki", "uid": "loki"}
+          }
+        ],
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {"Time": true},
+              "renameByName": {
+                "user_agent": "User-Agent",
+                "Value": "Count"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "HTTP Methods Distribution",
+        "type": "piechart",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+        "targets": [
+          {
+            "expr": "sum by (http_method) (count_over_time({service=\"beelzebub\"} |= \"HTTP New request\" [1h]))",
+            "format": "table",
+            "refId": "A",
+            "datasource": {"type": "loki", "uid": "loki"}
+          }
+        ],
+        "options": {
+          "legend": {"displayMode": "table", "placement": "right"},
+          "pieType": "pie"
+        }
+      },
+      {
+        "id": 8,
+        "title": "Events Timeline",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 24},
+        "targets": [
+          {
+            "expr": "rate(beelzebub_events_total[1m]) * 60",
+            "legendFormat": "Total Events/min",
+            "refId": "A"
+          },
+          {
+            "expr": "rate(beelzebub_http_events_total[1m]) * 60",
+            "legendFormat": "HTTP Events/min",
+            "refId": "B"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "unit": "reqps"
+          }
+        }
+      },
+      {
+        "id": 9,
+        "title": "Recent Events Log",
+        "type": "logs",
+        "gridPos": {"h": 10, "w": 24, "x": 0, "y": 32},
+        "targets": [
+          {
+            "expr": "{service=\"beelzebub\"} |= \"HTTP New request\"",
+            "refId": "A",
+            "datasource": {"type": "loki", "uid": "loki"}
+          }
+        ],
+        "options": {
+          "dedupStrategy": "none",
+          "enableLogDetails": true,
+          "prettifyLogMessage": false,
+          "showCommonLabels": false,
+          "showTime": true,
+          "sortOrder": "Descending",
+          "wrapLogMessage": false
+        }
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "timepicker": {},
+    "templating": {
+      "list": []
+    },
+    "annotations": {
+      "list": []
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 0,
+    "links": [],
+    "liveNow": false,
+    "weekStart": ""
+  }
+}

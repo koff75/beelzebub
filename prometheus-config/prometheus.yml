@@ -1,0 +1,38 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'railway'
+    environment: 'production'
+
+# Configuration pour scraper les métriques de beelzebub
+scrape_configs:
+  # Scrape beelzebub metrics
+  - job_name: 'beelzebub'
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    metrics_path: '/metrics'
+    # Sur Railway, utiliser le nom du service ou l'URL interne
+    # Si beelzebub est dans le même projet Railway, utiliser le nom du service
+    static_configs:
+      - targets:
+          # Option 1: Si les services Railway peuvent se résoudre par nom
+          - 'beelzebub:8080'
+          # Option 2: Utiliser l'URL publique (moins optimal mais fonctionne)
+          # - '3il-ingenieurs.site:443'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: service
+        replacement: 'beelzebub'
+      - target_label: environment
+        replacement: 'production'
+      - target_label: honeypot_type
+        replacement: 'n8n'
+
+  # Scrape Prometheus lui-même
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
