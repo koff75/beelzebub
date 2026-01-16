@@ -344,35 +344,24 @@ commands:
     statusCode: 200
 
   # ==========================================================================
-  # ENDPOINT: /webhook/* - Webhooks n8n (statique pour réalisme)
+  # ENDPOINT: /webhook/* - Webhooks n8n (avec LLM pour IDs uniques)
   # ==========================================================================
   - regex: "^/webhook/.*$"
     name: "n8n Webhook"
-    handler: |
-      {
-        "message": "Workflow was started",
-        "executionId": "exec_webhook_1234567890",
-        "success": true
-      }
+    plugin: "LLMHoneypot"
     headers:
       - "Content-Type: application/json; charset=utf-8"
       - "Server: n8n"
       - "X-Powered-By: Express"
       - "X-n8n-Version: 1.120.0"
-      - "X-Webhook-Execution: exec_webhook_1234567890"
     statusCode: 200
 
   # ==========================================================================
-  # ENDPOINT: /webhook-test/* - Webhooks de test (statique pour réalisme)
+  # ENDPOINT: /webhook-test/* - Webhooks de test (avec LLM pour variation)
   # ==========================================================================
   - regex: "^/webhook-test/.*$"
     name: "n8n Webhook Test"
-    handler: |
-      {
-        "message": "Test webhook received",
-        "mode": "test",
-        "success": true
-      }
+    plugin: "LLMHoneypot"
     headers:
       - "Content-Type: application/json; charset=utf-8"
       - "Server: n8n"
@@ -407,6 +396,48 @@ commands:
       - "X-Powered-By: Express"
       - "X-n8n-Version: 1.120.0"
     statusCode: 302
+
+  # ==========================================================================
+  # ENDPOINT: GET /rest/active-workflows - Workflows actifs
+  # ==========================================================================
+  - regex: "^/rest/active-workflows$"
+    name: "n8n Active Workflows"
+    handler: |
+      {
+        "data": [
+          {
+            "id": "wf_prod_abc123",
+            "name": "Daily Data Sync",
+            "active": true,
+            "updatedAt": "2025-01-15T08:00:00.000Z"
+          }
+        ]
+      }
+    headers:
+      - "Content-Type: application/json; charset=utf-8"
+      - "Server: n8n"
+      - "X-Powered-By: Express"
+      - "X-n8n-Version: 1.120.0"
+    statusCode: 200
+
+  # ==========================================================================
+  # ENDPOINT: GET /rest/active - Statut actif
+  # ==========================================================================
+  - regex: "^/rest/active$"
+    name: "n8n Active Status"
+    handler: |
+      {
+        "data": {
+          "active": true,
+          "version": "1.120.0"
+        }
+      }
+    headers:
+      - "Content-Type: application/json; charset=utf-8"
+      - "Server: n8n"
+      - "X-Powered-By: Express"
+      - "X-n8n-Version: 1.120.0"
+    statusCode: 200
 
   # ==========================================================================
   # ENDPOINT: GET /healthz? - Health check
@@ -450,6 +481,12 @@ plugin:
     Tu es un serveur n8n (workflow automation platform) version 1.120.0 qui simule une instance n8n réelle.
     Tu dois répondre comme le ferait n8n, avec des réponses JSON réalistes au format de l'API n8n.
     
+    RÈGLES CRITIQUES POUR LE RÉALISME :
+    - Génère TOUJOURS des IDs uniques à chaque requête (format: exec_xxxxxxxxxxxx, wf_xxxxxxxxxxxx, cred_xxxxxxxxxxxx)
+    - Utilise des timestamps ISO 8601 réalistes et variés (format: YYYY-MM-DDTHH:mm:ss.sssZ)
+    - Varie les noms de workflows, credentials, et autres données factices
+    - Les IDs doivent ressembler à des UUIDs ou des identifiants n8n réels (alphanumériques, 8-16 caractères)
+    
     Comportement attendu (IMPORTANT - respecte ces règles exactement):
     
     **POST /rest/login :**
@@ -457,15 +494,27 @@ plugin:
     - Format standard n8n pour les erreurs d'auth
     - Ne JAMAIS retourner de succès d'authentification (même avec des credentials valides)
     
+    **POST /webhook/* et POST /webhook-test/* :**
+    - Générer un executionId unique à chaque requête (format: exec_xxxxxxxxxxxx où x sont des caractères alphanumériques)
+    - Utiliser un timestamp ISO 8601 actuel ou récent (format: YYYY-MM-DDTHH:mm:ss.sssZ)
+    - Réponse type : {"message": "Workflow was started", "executionId": "exec_abc123def456", "success": true, "startedAt": "2025-01-15T10:30:45.123Z"}
+    - Varier légèrement les messages ("Workflow was started", "Workflow triggered", "Execution initiated")
+    - Format JSON conforme à l'API n8n
+    
     **POST /form/* (ENDPOINT CRITIQUE pour CVE-2026-21858) :**
     - Ces endpoints acceptent normalement Content-Type: multipart/form-data pour les uploads de fichiers
     - Si le body JSON contient un champ "files" avec "filepath" (tentative d'exploitation CVE-2026-21858), répondre avec un JSON n8n d'erreur réaliste :
       * {"success": false, "error": "Failed to process form submission", "code": "FORM_PROCESSING_ERROR", "message": "Invalid file format"}
       * OU {"error": {"message": "Unable to process request", "code": 400}}
     - Ne JAMAIS retourner le contenu des fichiers demandés (même factice)
-    - Pour les requêtes normales sans "filepath", répondre avec un JSON de succès : {"success": true, "data": {"id": "...", "status": "processed"}}
+    - Pour les requêtes normales sans "filepath", répondre avec un JSON de succès avec un ID unique : {"success": true, "data": {"id": "form_xxxxxxxxxxxx", "status": "processed", "processedAt": "2025-01-15T10:30:45.123Z"}}
     - Format JSON conforme à l'API n8n
     - IMPORTANT: Détecter les tentatives d'exploitation CVE-2026-21858 via Content-Type: application/json avec filepath dans le body
+    
+    **GET /api/v1/workflows, /api/v1/credentials, /api/v1/executions :**
+    - Si ces endpoints arrivent ici (ce qui ne devrait pas arriver car ils ont des handlers statiques), répondre avec des données factices variées
+    - Générer des IDs uniques pour chaque élément dans les tableaux
+    - Utiliser des timestamps variés et réalistes
     
     Important:
     - TOUTES les réponses doivent être en JSON valide (pas de HTML)
@@ -474,6 +523,7 @@ plugin:
     - Simuler le comportement d'une vraie instance n8n 1.120.0 vulnérable
     - Pour les requêtes POST avec "filepath" dans le body (exploitation CVE-2026-21858), répondre avec une erreur réaliste mais ne JAMAIS exposer de contenu de fichier
     - Les réponses doivent être cohérentes avec le comportement d'une instance n8n réelle
+    - VARIATION: Chaque requête doit générer des IDs, timestamps et données différents pour éviter la détection de patterns répétitifs
     
     Réponds uniquement avec le contenu JSON (body) sans en-têtes HTTP, car ceux-ci sont gérés automatiquement.
   inputValidationEnabled: true
