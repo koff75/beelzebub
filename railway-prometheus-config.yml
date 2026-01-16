@@ -17,13 +17,15 @@ scrape_configs:
     # Sur Railway, utiliser l'URL publique ou le nom de service interne
     static_configs:
       - targets:
-          # Option 1: URL publique (fonctionne toujours)
-          - '3il-ingenieurs.site:443'
-          # Option 2: Nom de service interne (si disponible)
+          # Option 1: URL publique (fonctionne toujours) - RECOMMANDÉ
+          - '3il-ingenieurs.site'
+          # Option 2: Nom de service interne Railway (si disponible)
           # - 'beelzebub:8080'
+          # Option 3: URL Railway complète (alternative)
+          # - 'beelzebub-production.up.railway.app'
     scheme: 'https'  # Railway utilise HTTPS
     tls_config:
-      insecure_skip_verify: true  # Pour les certificats auto-signés Railway
+      insecure_skip_verify: false  # Railway utilise des certificats valides
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target
