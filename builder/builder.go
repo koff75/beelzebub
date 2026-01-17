@@ -107,6 +107,9 @@ func (b *Builder) Run() error {
 ██   ██ ██      ██      ██       ███    ██      ██   ██ ██    ██ ██   ██ 
 ██████  ███████ ███████ ███████ ███████ ███████ ██████   ██████  ██████  
 Honeypot Framework, happy hacking!`)
+	if os.Getenv("LOKI_URL") != "" {
+		log.Info("LOKI_URL is set, events will be pushed to Loki")
+	}
 	// Init Prometheus openmetrics
 	go func() {
 		if (b.beelzebubCoreConfigurations.Core.Prometheus != parser.Prometheus{}) {
