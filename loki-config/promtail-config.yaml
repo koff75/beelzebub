@@ -27,7 +27,7 @@ scrape_configs:
           job: beelzebub
           service: beelzebub
           environment: production
-          honeypot_type: n8n
+          service_type: n8n
           __path__: /var/log/beelzebub/*.log
     
     # Pipeline pour parser les logs JSON

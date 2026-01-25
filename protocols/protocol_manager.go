@@ -6,7 +6,7 @@ import (
 	"github.com/mariocandela/beelzebub/v3/tracer"
 )
 
-// ServiceStrategy is the common interface that each protocol honeypot implements
+// ServiceStrategy is the common interface that each protocol service implements
 type ServiceStrategy interface {
 	Init(beelzebubServiceConfiguration parser.BeelzebubServiceConfiguration, tracer tracer.Tracer) error
 }
@@ -28,7 +28,7 @@ func (pm *ProtocolManager) SetProtocolStrategy(strategy ServiceStrategy) {
 	pm.strategy = strategy
 }
 
-// InitService is the method that initializes the honeypot
+// InitService is the method that initializes the service
 func (pm *ProtocolManager) InitService(beelzebubServiceConfiguration parser.BeelzebubServiceConfiguration) error {
 	return pm.strategy.Init(beelzebubServiceConfiguration, pm.tracer)
 }

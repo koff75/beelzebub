@@ -10,7 +10,7 @@
 
 ## Overview
 
-Beelzebub is an advanced honeypot framework designed to provide a highly secure environment for detecting and analyzing cyber attacks. It offers a low code approach for easy implementation and uses AI to mimic the behavior of a high-interaction honeypot.
+Beelzebub is an advanced security monitoring framework designed to provide a highly secure environment for detecting and analyzing cyber attacks. It offers a low code approach for easy implementation and uses AI to mimic the behavior of real systems for enhanced security monitoring.
 
 ![github beelzebub - inception program](https://github.com/user-attachments/assets/e180d602-6de9-4c48-92ad-eb0ef3c5322d)
 
@@ -26,16 +26,16 @@ For a comprehensive overview of our distributed threat intelligence framework an
 
 ## Key Features
 
-Beelzebub offers a wide range of features to enhance your honeypot environment:
+Beelzebub offers a wide range of features to enhance your security monitoring environment:
 
 - Low-code configuration: YAML-based, modular service definition
-- LLM integration: The LLM convincingly simulates a real system, creating high-interaction honeypot experiences, while actually maintaining low-interaction architecture for enhanced security and easy management.
+- LLM integration: The LLM convincingly simulates a real system, creating realistic interaction experiences, while actually maintaining low-interaction architecture for enhanced security and easy management.
 - Multi-protocol support: SSH, HTTP, TCP, MCP(Detect prompt injection against LLM agents)
 - Prometheus metrics & observability 
 - Docker & Kubernetes ready
 - ELK stack ready, docs: [Official ELK integration](https://www.elastic.co/docs/reference/integrations/beelzebub)
 
-## LLM Honeypot Demo
+## LLM Security Monitoring Demo
 ![demo-beelzebub](https://github.com/user-attachments/assets/4dbb9a67-6c12-49c5-82ac-9b3e340406ca)
 
 ## Code Quality
@@ -124,13 +124,13 @@ To execute Beelzebub with your custom path, use the following command:
 $ ./beelzebub --confCore ./configurations/beelzebub.yaml --confServices ./configurations/services/
 ```
 
-Here are some example configurations for different honeypot scenarios:
+Here are some example configurations for different security monitoring scenarios:
 
-### MCP Honeypot
+### MCP Detection Service
 
-#### Why choose an MCP Honeypot?
+#### Why choose an MCP Detection Service?
 
-An MCP honeypot is a **decoy tool** that the agent should never invoke under normal circumstances. Integrating this strategy into your agent pipeline offers three key benefits:
+An MCP detection service is a **monitoring tool** that the agent should never invoke under normal circumstances. Integrating this strategy into your agent pipeline offers three key benefits:
 
 * **Real-time detection of guardrail bypass attempts.**
   
@@ -144,7 +144,7 @@ An MCP honeypot is a **decoy tool** that the agent should never invoke under nor
 
 ![video-mcp-diagram](https://github.com/user-attachments/assets/e04fd19e-9537-427e-9131-9bee31d8ebad)
 
-##### Example MCP Honeypot Configuration
+##### Example MCP Detection Service Configuration
 
 ###### mcp-8000.yaml
 
@@ -194,7 +194,7 @@ tools:
 
 #### Invoke remotely: beelzebub:port/mcp (Streamable HTTPServer).
 
-### HTTP Honeypot
+### HTTP Service
 
 ###### http-80.yaml
 
@@ -259,7 +259,7 @@ commands:
     statusCode: 404
 ```
 
-### HTTP Honeypot
+### HTTP Service
 
 ###### http-8080.yaml
 
@@ -277,11 +277,11 @@ commands:
     statusCode: 401
 ```
 
-### SSH Honeypot
+### SSH Service
 
-###### LLM Honeypots
+###### LLM Integration
 
-Follow a SSH LLM Honeypot using OpenAI as provider LLM:
+Follow a SSH LLM Service using OpenAI as provider LLM:
 
 ```yaml
 apiVersion: "v1"
@@ -341,7 +341,7 @@ plugin:
    prompt: "You will act as an Ubuntu Linux terminal. The user will type commands, and you are to reply with what the terminal should show. Your responses must be contained within a single code block."
 ```
 
-###### SSH Honeypot
+###### SSH Service
 
 ###### ssh-22.yaml
 

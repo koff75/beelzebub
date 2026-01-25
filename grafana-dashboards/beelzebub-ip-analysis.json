@@ -1,318 +1,111 @@
 {
-  "dashboard": {
-    "title": "Beelzebub - IP Analysis",
-    "tags": ["beelzebub", "ip-analysis", "security", "threat-intel"],
-    "timezone": "browser",
-    "schemaVersion": 38,
-    "version": 1,
-    "refresh": "10s",
-    "panels": [
+  "annotations": {
+    "list": [
       {
-        "id": 1,
-        "title": "Most Active IPs (Last 24h)",
-        "type": "table",
-        "gridPos": {"h": 10, "w": 12, "x": 0, "y": 0},
-        "targets": [
-          {
-            "expr": "topk(20, sum by (source_ip) (count_over_time({service=\"beelzebub\"} |= \"HTTP New request\" [24h])))",
-            "format": "table",
-            "refId": "A",
-            "datasource": {"type": "loki", "uid": "loki"}
-          }
-        ],
-        "transformations": [
-          {
-            "id": "organize",
-            "options": {
-              "excludeByName": {"Time": true},
-              "renameByName": {
-                "source_ip": "Source IP",
-                "Value": "Requests (24h)"
-              }
-            }
-          },
-          {
-            "id": "sortBy",
-            "options": {
-              "fields": {},
-              "sort": [
-                {
-                  "desc": true,
-                  "field": "Requests (24h)"
-                }
-              ]
-            }
-          }
-        ],
-        "options": {
-          "showHeader": true,
-          "sortBy": [
-            {
-              "desc": true,
-              "displayName": "Requests (24h)"
-            }
-          ]
-        }
-      },
-      {
-        "id": 2,
-        "title": "Requests per IP (Timeline)",
-        "type": "timeseries",
-        "gridPos": {"h": 10, "w": 12, "x": 12, "y": 0},
-        "targets": [
-          {
-            "expr": "sum by (source_ip) (rate({service=\"beelzebub\"} |= \"HTTP New request\" [5m]))",
-            "legendFormat": "{{source_ip}}",
-            "refId": "A",
-            "datasource": {"type": "loki", "uid": "loki"}
-          }
-        ],
-        "fieldConfig": {
-          "defaults": {
-            "color": {"mode": "palette-classic"},
-            "unit": "reqps"
-          }
-        },
-        "options": {
-          "legend": {"displayMode": "table", "placement": "right"}
-        }
-      },
-      {
-        "id": 3,
-        "title": "Endpoints Targeted by IP (Heatmap)",
-        "type": "heatmap",
-        "gridPos": {"h": 10, "w": 12, "x": 0, "y": 10},
-        "targets": [
-          {
-            "expr": "sum by (source_ip, request_uri) (count_over_time({service=\"beelzebub\"} |= \"HTTP New request\" [1h]))",
-            "format": "heatmap",
-            "refId": "A",
-            "datasource": {"type": "loki", "uid": "loki"}
-          }
-        ],
-        "options": {
-          "calculate": false,
-          "cellGap": 2,
-          "cellValues": {
-            "unit": "short"
-          },
-          "color": {
-            "exponent": 0.5,
-            "fill": "dark-orange",
-            "mode": "spectrum",
-            "reverse": false,
-            "scale": "exponential",
-            "scheme": "Spectral",
-            "steps": 64
-          },
-          "exemplars": {
-            "color": "rgba(255,0,255,0.7)"
-          },
-          "filterValues": {
-            "le": 1e-9
-          },
-          "legend": {
-            "show": true
-          },
-          "rowsFrame": {
-            "layout": "auto"
-          },
-          "tooltip": {
-            "show": true,
-            "yHistogram": false
-          },
-          "yAxis": {
-            "axisPlacement": "left",
-            "reverse": false,
-            "unit": "short"
-          }
-        }
-      },
-      {
-        "id": 4,
-        "title": "User-Agents by IP",
-        "type": "table",
-        "gridPos": {"h": 10, "w": 12, "x": 12, "y": 10},
-        "targets": [
-          {
-            "expr": "topk(20, sum by (source_ip, user_agent) (count_over_time({service=\"beelzebub\"} |= \"HTTP New request\" [24h])))",
-            "format": "table",
-            "refId": "A",
-            "datasource": {"type": "loki", "uid": "loki"}
-          }
-        ],
-        "transformations": [
-          {
-            "id": "organize",
-            "options": {
-              "excludeByName": {"Time": true},
-              "renameByName": {
-                "source_ip": "Source IP",
-                "user_agent": "User-Agent",
-                "Value": "Requests"
-              }
-            }
-          }
-        ],
-        "options": {
-          "showHeader": true
-        }
-      },
-      {
-        "id": 5,
-        "title": "IPs with Abnormal Request Rate",
-        "type": "stat",
-        "gridPos": {"h": 4, "w": 8, "x": 0, "y": 20},
-        "targets": [
-          {
-            "expr": "count(sum by (source_ip) (rate({service=\"beelzebub\"} |= \"HTTP New request\" [5m])) > 10)",
-            "refId": "A",
-            "datasource": {"type": "loki", "uid": "loki"}
-          }
-        ],
-        "fieldConfig": {
-          "defaults": {
-            "color": {"mode": "thresholds"},
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {"value": null, "color": "green"},
-                {"value": 1, "color": "yellow"},
-                {"value": 5, "color": "red"}
-              ]
-            },
-            "unit": "short"
-          }
-        }
-      },
-      {
-        "id": 6,
-        "title": "IPs Targeting Specific Endpoints",
-        "type": "table",
-        "gridPos": {"h": 8, "w": 12, "x": 8, "y": 20},
-        "targets": [
-          {
-            "expr": "sum by (source_ip, request_uri) (count_over_time({service=\"beelzebub\"} |= \"/form/\" [24h]))",
-            "format": "table",
-            "refId": "A",
-            "datasource": {"type": "loki", "uid": "loki"}
-          }
-        ],
-        "transformations": [
-          {
-            "id": "organize",
-            "options": {
-              "excludeByName": {"Time": true},
-              "renameByName": {
-                "source_ip": "Source IP",
-                "request_uri": "Endpoint",
-                "Value": "Requests"
-              }
-            }
-          }
-        ]
-      },
-      {
-        "id": 7,
-        "title": "Suspicious Patterns",
-        "type": "logs",
-        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24},
-        "targets": [
-          {
-            "expr": "{service=\"beelzebub\"} | json | (source_ip=\"*\") and (request_uri=~\"/form/.*|/webhook/.*\")",
-            "refId": "A",
-            "datasource": {"type": "loki", "uid": "loki"}
-          }
-        ],
-        "options": {
-          "dedupStrategy": "none",
-          "enableLogDetails": true,
-          "prettifyLogMessage": true,
-          "showCommonLabels": false,
-          "showTime": true,
-          "sortOrder": "Descending",
-          "wrapLogMessage": true
-        }
-      },
-      {
-        "id": 8,
-        "title": "IP Activity Timeline",
-        "type": "timeseries",
-        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 24},
-        "targets": [
-          {
-            "expr": "topk(5, sum by (source_ip) (rate({service=\"beelzebub\"} |= \"HTTP New request\" [5m])))",
-            "legendFormat": "{{source_ip}}",
-            "refId": "A",
-            "datasource": {"type": "loki", "uid": "loki"}
-          }
-        ],
-        "fieldConfig": {
-          "defaults": {
-            "color": {"mode": "palette-classic"},
-            "unit": "reqps"
-          }
-        },
-        "options": {
-          "legend": {"displayMode": "table", "placement": "right"}
-        }
-      },
-      {
-        "id": 9,
-        "title": "Detailed IP Information",
-        "type": "logs",
-        "gridPos": {"h": 10, "w": 24, "x": 0, "y": 32},
-        "targets": [
-          {
-            "expr": "{service=\"beelzebub\"} |= \"HTTP New request\" | json",
-            "refId": "A",
-            "datasource": {"type": "loki", "uid": "loki"}
-          }
-        ],
-        "options": {
-          "dedupStrategy": "none",
-          "enableLogDetails": true,
-          "prettifyLogMessage": true,
-          "showCommonLabels": true,
-          "showTime": true,
-          "sortOrder": "Descending",
-          "wrapLogMessage": true
-        }
+        "builtIn": 1,
+        "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+        "enable": true,
+        "hide": true,
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
       }
-    ],
-    "time": {
-      "from": "now-24h",
-      "to": "now"
-    },
-    "timepicker": {},
-    "templating": {
-      "list": [
-        {
-          "name": "source_ip",
-          "type": "query",
-          "datasource": {"type": "loki", "uid": "loki"},
-          "query": "label_values({service=\"beelzebub\"}, source_ip)",
-          "current": {
-            "selected": false,
-            "text": "All",
-            "value": "$__all"
-          },
-          "options": [],
-          "refresh": 1,
-          "regex": "",
-          "multi": true,
-          "includeAll": true
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "grafana_prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "red", "value": 100 }
+            ]
+          }
         }
-      ]
+      },
+      "gridPos": { "h": 4, "w": 24, "x": 0, "y": 0 },
+      "id": 1,
+      "targets": [
+        { "expr": "sum(beelzebub_events_total)", "refId": "A" }
+      ],
+      "title": "Total Service Events",
+      "type": "stat"
     },
-    "annotations": {
-      "list": []
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafana_lokiq"
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "id": 2,
+      "targets": [
+        {
+          "expr": "topk(10, sum by (source_ip) (count_over_time({service=\"beelzebub\"} |= \"HTTP New request\" | json | label_format source_ip=source_ip [24h])))",
+          "format": "table",
+          "refId": "A"
+        }
+      ],
+      "title": "Top Source IPs (Loki Fix)",
+      "transformations": [
+        { "id": "organize", "options": { "excludeByName": { "Time": true }, "renameByName": { "Value": "Total Requests" } } }
+      ],
+      "type": "table"
     },
-    "editable": true,
-    "fiscalYearStartMonth": 0,
-    "graphTooltip": 0,
-    "links": [],
-    "liveNow": false,
-    "weekStart": ""
-  }
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafana_lokiq"
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "id": 3,
+      "targets": [
+        {
+          "expr": "sum by (request_uri) (count_over_time({service=\"beelzebub\"} |= \"HTTP New request\" | json | label_format request_uri=request_uri [24h]))",
+          "refId": "A"
+        }
+      ],
+      "title": "Targeted Endpoints Distribution",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafana_lokiq"
+      },
+      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 12 },
+      "id": 4,
+      "options": {
+        "showTime": true,
+        "wrapLogMessage": true,
+        "enableLogDetails": true
+      },
+      "targets": [
+        {
+          "expr": "{service=\"beelzebub\"} |= \"HTTP New request\" | json",
+          "refId": "A"
+        }
+      ],
+      "title": "Cleaned Logs (Timestamp Removed)",
+      "type": "logs"
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 38,
+  "templating": { "list": [] },
+  "time": { "from": "now-1h", "to": "now" },
+  "title": "Beelzebub - IP Analysis",
+  "uid": "09b60e30-bec9-440c-81f3-6a0178647cc1",
+  "version": 1,
+  "tags": ["beelzebub", "monitoring", "ip-analysis", "security"]
 }

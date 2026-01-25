@@ -1,4 +1,4 @@
-// Package parser is responsible for parsing the configurations of the core and honeypot service
+// Package parser is responsible for parsing the configurations of the core and service configuration
 package parser
 
 import (
@@ -66,7 +66,7 @@ type Plugin struct {
 	OutputValidationPrompt string `yaml:"outputValidationPrompt"`
 }
 
-// BeelzebubServiceConfiguration is the struct that contains the configurations of the honeypot service
+// BeelzebubServiceConfiguration is the struct that contains the configurations of the service
 type BeelzebubServiceConfiguration struct {
 	ApiVersion             string    `yaml:"apiVersion"`
 	Protocol               string    `yaml:"protocol"`
@@ -166,7 +166,7 @@ func (bp configurationsParser) ReadConfigurationsCore() (*BeelzebubCoreConfigura
 	return beelzebubConfiguration, nil
 }
 
-// ReadConfigurationsServices is the method that reads the configurations of the honeypot services from files
+// ReadConfigurationsServices is the method that reads the configurations of the services from files
 func (bp configurationsParser) ReadConfigurationsServices() ([]BeelzebubServiceConfiguration, error) {
 	services, err := bp.gelAllFilesNameByDirNameDependency(bp.configurationsServicesDirectory)
 	if err != nil {

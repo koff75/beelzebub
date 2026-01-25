@@ -6,3 +6,12 @@ logs
 coverage*.out
 integration_test/certs/tls.crt
 integration_test/certs/tls.key
+
+# Fichiers de documentation contenant des informations sensibles
+*.md
+!README.md
+!CODE_OF_CONDUCT.md
+!CONTRIBUTING.md
+!LICENSE
+!SECURITY.md
+!.github/**/*.md

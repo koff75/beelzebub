@@ -1,242 +1,202 @@
 {
-  "dashboard": {
-    "title": "Beelzebub Honeypot - Overview",
-    "tags": ["beelzebub", "honeypot", "n8n", "security"],
-    "timezone": "browser",
-    "schemaVersion": 38,
-    "version": 1,
-    "refresh": "10s",
-    "panels": [
+  "annotations": {
+    "list": [
       {
-        "id": 1,
-        "title": "Total Events",
-        "type": "stat",
-        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
-        "targets": [
-          {
-            "expr": "beelzebub_events_total",
-            "refId": "A",
-            "datasource": {"type": "prometheus", "uid": "prometheus"}
-          }
-        ],
-        "fieldConfig": {
-          "defaults": {
-            "color": {"mode": "thresholds"},
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {"value": null, "color": "green"},
-                {"value": 100, "color": "yellow"},
-                {"value": 1000, "color": "red"}
-              ]
-            },
-            "unit": "short"
-          }
-        }
-      },
-      {
-        "id": 2,
-        "title": "Events by Protocol",
-        "type": "piechart",
-        "gridPos": {"h": 8, "w": 6, "x": 6, "y": 0},
-        "targets": [
-          {
-            "expr": "beelzebub_http_events_total",
-            "legendFormat": "HTTP",
-            "refId": "A"
-          },
-          {
-            "expr": "beelzebub_ssh_events_total",
-            "legendFormat": "SSH",
-            "refId": "B"
-          },
-          {
-            "expr": "beelzebub_tcp_events_total",
-            "legendFormat": "TCP",
-            "refId": "C"
-          },
-          {
-            "expr": "beelzebub_mcp_events_total",
-            "legendFormat": "MCP",
-            "refId": "D"
-          }
-        ],
-        "options": {
-          "legend": {"displayMode": "table", "placement": "right"},
-          "pieType": "pie"
-        }
-      },
-      {
-        "id": 3,
-        "title": "HTTP Events Rate (per minute)",
-        "type": "timeseries",
-        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
-        "targets": [
-          {
-            "expr": "rate(beelzebub_http_events_total[1m]) * 60",
-            "legendFormat": "HTTP Events/min",
-            "refId": "A"
-          }
-        ],
-        "fieldConfig": {
-          "defaults": {
-            "color": {"mode": "palette-classic"},
-            "unit": "reqps"
-          }
-        }
-      },
-      {
-        "id": 4,
-        "title": "Top 10 Source IPs",
-        "type": "table",
-        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
-        "targets": [
-          {
-            "expr": "topk(10, sum by (source_ip) (count_over_time({service=\"beelzebub\"} |= \"HTTP New request\" [1h])))",
-            "format": "table",
-            "refId": "A",
-            "datasource": {"type": "loki", "uid": "loki"}
-          }
-        ],
-        "transformations": [
-          {
-            "id": "organize",
-            "options": {
-              "excludeByName": {"Time": true},
-              "indexByName": {},
-              "renameByName": {
-                "source_ip": "Source IP",
-                "Value": "Requests"
-              }
-            }
-          }
-        ]
-      },
-      {
-        "id": 5,
-        "title": "Top 10 Endpoints",
-        "type": "barchart",
-        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
-        "targets": [
-          {
-            "expr": "sum by (request_uri) (count_over_time({service=\"beelzebub\"} |= \"HTTP New request\" [1h]))",
-            "format": "table",
-            "refId": "A",
-            "datasource": {"type": "loki", "uid": "loki"}
-          }
-        ],
-        "options": {
-          "orientation": "horizontal",
-          "legend": {"displayMode": "list", "placement": "bottom"}
-        }
-      },
-      {
-        "id": 6,
-        "title": "Top 10 User-Agents",
-        "type": "table",
-        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
-        "targets": [
-          {
-            "expr": "topk(10, sum by (user_agent) (count_over_time({service=\"beelzebub\"} |= \"HTTP New request\" [1h])))",
-            "format": "table",
-            "refId": "A",
-            "datasource": {"type": "loki", "uid": "loki"}
-          }
-        ],
-        "transformations": [
-          {
-            "id": "organize",
-            "options": {
-              "excludeByName": {"Time": true},
-              "renameByName": {
-                "user_agent": "User-Agent",
-                "Value": "Count"
-              }
-            }
-          }
-        ]
-      },
-      {
-        "id": 7,
-        "title": "HTTP Methods Distribution",
-        "type": "piechart",
-        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
-        "targets": [
-          {
-            "expr": "sum by (http_method) (count_over_time({service=\"beelzebub\"} |= \"HTTP New request\" [1h]))",
-            "format": "table",
-            "refId": "A",
-            "datasource": {"type": "loki", "uid": "loki"}
-          }
-        ],
-        "options": {
-          "legend": {"displayMode": "table", "placement": "right"},
-          "pieType": "pie"
-        }
-      },
-      {
-        "id": 8,
-        "title": "Events Timeline",
-        "type": "timeseries",
-        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 24},
-        "targets": [
-          {
-            "expr": "rate(beelzebub_events_total[1m]) * 60",
-            "legendFormat": "Total Events/min",
-            "refId": "A"
-          },
-          {
-            "expr": "rate(beelzebub_http_events_total[1m]) * 60",
-            "legendFormat": "HTTP Events/min",
-            "refId": "B"
-          }
-        ],
-        "fieldConfig": {
-          "defaults": {
-            "color": {"mode": "palette-classic"},
-            "unit": "reqps"
-          }
-        }
-      },
-      {
-        "id": 9,
-        "title": "Recent Events Log",
-        "type": "logs",
-        "gridPos": {"h": 10, "w": 24, "x": 0, "y": 32},
-        "targets": [
-          {
-            "expr": "{service=\"beelzebub\"} |= \"HTTP New request\"",
-            "refId": "A",
-            "datasource": {"type": "loki", "uid": "loki"}
-          }
-        ],
-        "options": {
-          "dedupStrategy": "none",
-          "enableLogDetails": true,
-          "prettifyLogMessage": false,
-          "showCommonLabels": false,
-          "showTime": true,
-          "sortOrder": "Descending",
-          "wrapLogMessage": false
-        }
+        "builtIn": 1,
+        "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
       }
-    ],
-    "time": {
-      "from": "now-1h",
-      "to": "now"
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": { "type": "prometheus", "uid": "grafana_prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "yellow", "value": 100 },
+              { "color": "red", "value": 1000 }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "id": 1,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      },
+      "targets": [
+        { "expr": "sum(beelzebub_events_total)", "refId": "A" }
+      ],
+      "title": "Total Events",
+      "type": "stat"
     },
-    "timepicker": {},
-    "templating": {
-      "list": []
+    {
+      "datasource": { "type": "prometheus", "uid": "grafana_prometheus" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" } },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 0 },
+      "id": 2,
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right" },
+        "pieType": "pie"
+      },
+      "targets": [
+        { "expr": "sum(beelzebub_http_events_total)", "legendFormat": "HTTP", "refId": "A" },
+        { "expr": "sum(beelzebub_ssh_events_total)", "legendFormat": "SSH", "refId": "B" },
+        { "expr": "sum(beelzebub_tcp_events_total)", "legendFormat": "TCP", "refId": "C" }
+      ],
+      "title": "Events by Protocol",
+      "type": "piechart"
     },
-    "annotations": {
-      "list": []
+    {
+      "datasource": { "type": "prometheus", "uid": "grafana_prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "id": 3,
+      "targets": [
+        { "expr": "sum(rate(beelzebub_http_events_total[1m])) * 60", "legendFormat": "HTTP/min", "refId": "A" }
+      ],
+      "title": "HTTP Rate",
+      "type": "timeseries"
     },
-    "editable": true,
-    "fiscalYearStartMonth": 0,
-    "graphTooltip": 0,
-    "links": [],
-    "liveNow": false,
-    "weekStart": ""
-  }
+    {
+      "datasource": { "type": "loki", "uid": "grafana_lokiq" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "id": 4,
+      "targets": [
+        {
+          "expr": "topk(10, sum by (source_ip) (count_over_time({service=\"beelzebub\"} |= \"HTTP New request\" | regexp \"(?P<j>{.*)\" | line_format \"{{.j}}\" | json [1h])))",
+          "format": "table",
+          "refId": "A"
+        }
+      ],
+      "title": "Top 10 Source IPs",
+      "transformations": [
+        { "id": "organize", "options": { "excludeByName": { "Time": true }, "renameByName": { "Value": "Requests" } } }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "grafana_lokiq" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "id": 5,
+      "targets": [
+        {
+          "expr": "topk(10, sum by (request_uri) (count_over_time({service=\"beelzebub\"} |= \"HTTP New request\" | regexp \"(?P<j>{.*)\" | line_format \"{{.j}}\" | json [1h])))",
+          "format": "table",
+          "refId": "A"
+        }
+      ],
+      "title": "Top 10 Endpoints",
+      "type": "barchart"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "grafana_lokiq" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "id": 6,
+      "targets": [
+        {
+          "expr": "topk(10, sum by (user_agent) (count_over_time({service=\"beelzebub\"} |= \"HTTP New request\" | regexp \"(?P<j>{.*)\" | line_format \"{{.j}}\" | json [1h])))",
+          "format": "table",
+          "refId": "A"
+        }
+      ],
+      "title": "Top 10 User-Agents",
+      "type": "table"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "grafana_lokiq" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "id": 7,
+      "targets": [
+        {
+          "expr": "sum by (http_method) (count_over_time({service=\"beelzebub\"} |= \"HTTP New request\" | regexp \"(?P<j>{.*)\" | line_format \"{{.j}}\" | json [1h]))",
+          "format": "table",
+          "refId": "A"
+        }
+      ],
+      "title": "HTTP Methods",
+      "type": "piechart"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "grafana_lokiq" },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 32 },
+      "id": 9,
+      "options": { "showTime": true, "wrapLogMessage": true, "enableLogDetails": true },
+      "targets": [
+        {
+          "expr": "{service=\"beelzebub\"} |= \"HTTP New request\" | regexp \"(?P<j>{.*)\" | line_format \"{{.j}}\" | json",
+          "refId": "A"
+        }
+      ],
+      "title": "Live Service Logs",
+      "type": "logs"
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 38,
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": true,
+          "text": "Prometheus",
+          "value": "grafana_prometheus"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Prometheus",
+        "multi": false,
+        "name": "DS_PROMETHEUS",
+        "options": [],
+        "query": "grafana_prometheus",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "Loki",
+          "value": "grafana_lokiq"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Loki",
+        "multi": false,
+        "name": "DS_LOKI",
+        "options": [],
+        "query": "grafana_lokiq",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      }
+    ]
+  },
+  "time": { "from": "now-1h", "to": "now" },
+  "title": "Beelzebub - Overview",
+  "uid": "e1b93267-9fcb-4ebb-8a89-8cf7392f8934",
+  "version": 1
 }

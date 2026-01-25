@@ -1,4 +1,4 @@
-// Package tracer is responsible for tracing the events that occur in the honeypots
+// Package tracer is responsible for tracing the events that occur in the services
 package tracer
 
 import (

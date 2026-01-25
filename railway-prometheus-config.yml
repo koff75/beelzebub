@@ -18,7 +18,7 @@ scrape_configs:
     static_configs:
       - targets:
           # Option 1: URL publique (fonctionne toujours) - RECOMMANDÉ
-          - '3il-ingenieurs.site'
+          - 'example.com'
           # Option 2: Nom de service interne Railway (si disponible)
           # - 'beelzebub:8080'
           # Option 3: URL Railway complète (alternative)
@@ -35,7 +35,7 @@ scrape_configs:
         replacement: 'beelzebub'
       - target_label: environment
         replacement: 'production'
-      - target_label: honeypot_type
+      - target_label: service_type
         replacement: 'n8n'
 
   # Scrape Prometheus lui-même

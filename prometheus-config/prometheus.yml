@@ -19,7 +19,7 @@ scrape_configs:
           # Option 1: Si les services Railway peuvent se résoudre par nom
           - 'beelzebub:8080'
           # Option 2: Utiliser l'URL publique (moins optimal mais fonctionne)
-          # - '3il-ingenieurs.site:443'
+          # - 'example.com:443'
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target
@@ -29,7 +29,7 @@ scrape_configs:
         replacement: 'beelzebub'
       - target_label: environment
         replacement: 'production'
-      - target_label: honeypot_type
+      - target_label: service_type
         replacement: 'n8n'
 
   # Scrape Prometheus lui-même

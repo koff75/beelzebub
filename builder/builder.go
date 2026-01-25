@@ -106,7 +106,7 @@ func (b *Builder) Run() error {
 ██████  █████   █████   ██        ███   █████   ██████  ██    ██ ██████  
 ██   ██ ██      ██      ██       ███    ██      ██   ██ ██    ██ ██   ██ 
 ██████  ███████ ███████ ███████ ███████ ███████ ██████   ██████  ██████  
-Honeypot Framework, happy hacking!`)
+Security Monitoring Framework, happy hacking!`)
 	if os.Getenv("LOKI_URL") != "" {
 		log.Info("LOKI_URL is set, events will be pushed to Loki")
 	}
@@ -135,13 +135,13 @@ Honeypot Framework, happy hacking!`)
 
 		beelzebubCloud := plugins.InitBeelzebubCloud(conf.URI, conf.AuthToken, true)
 
-		if honeypotsConfiguration, _, err := beelzebubCloud.GetHoneypotsConfigurations(); err != nil {
+		if servicesConfiguration, _, err := beelzebubCloud.GetHoneypotsConfigurations(); err != nil {
 			return err
 		} else {
-			if len(honeypotsConfiguration) == 0 {
-				return errors.New("no honeypots configuration found")
+			if len(servicesConfiguration) == 0 {
+				return errors.New("no services configuration found")
 			}
-			b.beelzebubServicesConfiguration = honeypotsConfiguration
+			b.beelzebubServicesConfiguration = servicesConfiguration
 		}
 	}
 
